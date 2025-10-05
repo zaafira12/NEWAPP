@@ -323,100 +323,171 @@ const RoutePlannerPage = ({ userId }) => {
                     const pollution = getPollutionLevel(route.pollution_score);
                     const IconComponent = pollution.icon;
                     
-                    // Get route color based on pollution score
-                    const routeColor = route.pollution_score <= 30 ? '#10b981' : 
-                                     route.pollution_score <= 50 ? '#eab308' : '#ef4444';
+                    // Enhanced color coding based on pollution score
+                    let routeColor, bgColor, borderColor, textColor, pollutionLabel, pollutionIcon;
+                    
+                    if (route.pollution_score <= 30) {
+                      // LOW POLLUTION - GREEN
+                      routeColor = '#10b981';
+                      bgColor = 'bg-green-50';
+                      borderColor = 'border-green-200';
+                      textColor = 'text-green-800';
+                      pollutionLabel = 'Low Pollution';
+                      pollutionIcon = '🟢';
+                    } else if (route.pollution_score <= 50) {
+                      // MODERATE POLLUTION - YELLOW
+                      routeColor = '#f59e0b';
+                      bgColor = 'bg-yellow-50';
+                      borderColor = 'border-yellow-200';
+                      textColor = 'text-yellow-800';
+                      pollutionLabel = 'Moderate Pollution';
+                      pollutionIcon = '🟡';
+                    } else {
+                      // HIGH POLLUTION - RED
+                      routeColor = '#ef4444';
+                      bgColor = 'bg-red-50';
+                      borderColor = 'border-red-200';
+                      textColor = 'text-red-800';
+                      pollutionLabel = 'High Pollution';
+                      pollutionIcon = '🔴';
+                    }
                     
                     return (
                       <div
                         key={route.id}
-                        className={`route-card cursor-pointer transition-all duration-200 ${
+                        className={`relative cursor-pointer transition-all duration-300 rounded-xl p-4 border-2 ${
                           selectedRoute?.id === route.id 
-                            ? 'ring-2 ring-blue-500 bg-blue-50' 
-                            : 'hover:shadow-md'
+                            ? `${bgColor} ${borderColor} shadow-lg transform scale-[1.02]` 
+                            : `bg-white border-gray-200 hover:shadow-md hover:${bgColor} hover:${borderColor}`
                         }`}
                         onClick={() => setSelectedRoute(route)}
                         data-testid={`route-option-${index}`}
                       >
+                        {/* Pollution Level Banner */}
+                        <div className={`absolute top-0 left-0 right-0 h-1 rounded-t-xl`} style={{ backgroundColor: routeColor }}></div>
+                        
                         <div className="flex items-start justify-between">
                           <div className="flex-1">
-                            <div className="flex items-center space-x-2 mb-2">
-                              <h4 className="font-semibold text-gray-900">{route.route_name}</h4>
+                            {/* Route Header with Color Coding */}
+                            <div className="flex items-center justify-between mb-3">
+                              <div className="flex items-center space-x-3">
+                                <h4 className="font-bold text-lg text-gray-900">{route.route_name}</h4>
+                                <div className="flex items-center space-x-1">
+                                  <span className="text-lg">{pollutionIcon}</span>
+                                  <span className={`text-xs font-semibold px-2 py-1 rounded-full ${bgColor} ${textColor}`}>
+                                    {pollutionLabel}
+                                  </span>
+                                </div>
+                              </div>
+                              
+                              {/* Pollution Score Badge */}
                               <div 
-                                className="w-3 h-3 rounded-full border border-white shadow-sm" 
+                                className="px-3 py-1 rounded-full text-white font-bold text-sm shadow-sm"
                                 style={{ backgroundColor: routeColor }}
-                                title={`Pollution Level: ${pollution.level}`}
-                              ></div>
+                              >
+                                {Math.round(route.pollution_score)}
+                              </div>
                             </div>
                             
-                            <div className="flex items-center space-x-4 text-sm text-gray-600 mb-2">
-                              <span className="flex items-center">
-                                <MapPin className="w-3 h-3 mr-1" />
-                                {route.distance_km} km
-                              </span>
-                              <span className="flex items-center">
-                                <Clock className="w-3 h-3 mr-1" />
-                                {route.duration_minutes} min
-                              </span>
+                            {/* Route Stats */}
+                            <div className="grid grid-cols-2 gap-4 mb-3">
+                              <div className="flex items-center space-x-2 text-sm text-gray-600">
+                                <MapPin className="w-4 h-4 text-blue-500" />
+                                <span className="font-semibold">{route.distance_km} km</span>
+                              </div>
+                              <div className="flex items-center space-x-2 text-sm text-gray-600">
+                                <Clock className="w-4 h-4 text-purple-500" />
+                                <span className="font-semibold">{Math.round(route.duration_minutes / 60)}h {route.duration_minutes % 60}m</span>
+                              </div>
                             </div>
 
-                            <div className="flex items-center space-x-2 mb-3">
-                              <IconComponent className="w-4 h-4" />
-                              <Badge 
-                                className={`pollution-indicator ${pollution.color}`}
-                                style={{ 
-                                  backgroundColor: routeColor + '20', 
-                                  color: routeColor,
-                                  border: `1px solid ${routeColor}`
-                                }}
-                              >
-                                {pollution.level} ({route.pollution_score})
-                              </Badge>
+                            {/* Air Quality Breakdown */}
+                            <div className="bg-gray-50 rounded-lg p-3 mb-3">
+                              <div className="flex items-center space-x-2 mb-2">
+                                <Wind className="w-4 h-4 text-gray-600" />
+                                <span className="text-sm font-semibold text-gray-700">Air Quality Along Route</span>
+                              </div>
+                              <div className="grid grid-cols-3 gap-2 text-xs">
+                                <div className="text-center">
+                                  <div className="font-medium text-gray-600">NO₂</div>
+                                  <div className={`font-bold ${textColor}`}>{route.pollutant_levels?.no2}</div>
+                                  <div className="text-gray-500">ppb</div>
+                                </div>
+                                <div className="text-center">
+                                  <div className="font-medium text-gray-600">O₃</div>
+                                  <div className={`font-bold ${textColor}`}>{route.pollutant_levels?.o3}</div>
+                                  <div className="text-gray-500">ppb</div>
+                                </div>
+                                <div className="text-center">
+                                  <div className="font-medium text-gray-600">SO₂</div>
+                                  <div className={`font-bold ${textColor}`}>{route.pollutant_levels?.so2}</div>
+                                  <div className="text-gray-500">ppb</div>
+                                </div>
+                              </div>
                             </div>
 
-                            {/* Show intermediate cities if available */}
+                            {/* Intermediate Cities Route */}
                             {route.waypoint_details && route.waypoint_details.filter(w => w.type === 'intermediate').length > 0 && (
-                              <div className="text-xs text-gray-600 mb-2">
-                                <span className="font-medium">Via: </span>
-                                {route.waypoint_details
-                                  .filter(w => w.type === 'intermediate')
-                                  .slice(0, 2)
-                                  .map(w => w.name.split(',')[0])
-                                  .join(', ')
-                                }
-                                {route.waypoint_details.filter(w => w.type === 'intermediate').length > 2 && 
-                                  ` +${route.waypoint_details.filter(w => w.type === 'intermediate').length - 2} more`
-                                }
+                              <div className="mb-3">
+                                <div className="flex items-center space-x-2 mb-1">
+                                  <Route className="w-4 h-4 text-indigo-500" />
+                                  <span className="text-sm font-semibold text-gray-700">Route Path</span>
+                                </div>
+                                <div className="text-sm text-gray-600 bg-white rounded-lg px-3 py-2 border">
+                                  {source.address.split(',')[0]} → {
+                                    route.waypoint_details
+                                      .filter(w => w.type === 'intermediate')
+                                      .map(w => w.name.split(',')[0])
+                                      .join(' → ')
+                                  } → {destination.address.split(',')[0]}
+                                </div>
                               </div>
                             )}
 
+                            {/* Health Recommendations */}
                             {route.recommendations && route.recommendations.length > 0 && (
-                              <div className="text-xs text-gray-500">
-                                <div className="font-medium mb-1">Health Tips:</div>
+                              <div className="bg-white rounded-lg border p-3">
+                                <div className="flex items-center space-x-2 mb-2">
+                                  <AlertTriangle className={`w-4 h-4 ${route.pollution_score > 50 ? 'text-red-500' : 'text-green-500'}`} />
+                                  <span className="text-sm font-semibold text-gray-700">Health Recommendations</span>
+                                </div>
                                 <ul className="space-y-1">
                                   {route.recommendations.slice(0, 2).map((rec, i) => (
-                                    <li key={i} className="flex items-start">
-                                      <span className="w-1 h-1 bg-gray-400 rounded-full mt-2 mr-2 flex-shrink-0"></span>
+                                    <li key={i} className="flex items-start space-x-2 text-xs text-gray-600">
+                                      <span className="text-gray-400 mt-1">•</span>
                                       <span>{rec}</span>
                                     </li>
                                   ))}
+                                  {route.recommendations.length > 2 && (
+                                    <li className="text-xs text-gray-500 italic">
+                                      +{route.recommendations.length - 2} more recommendations
+                                    </li>
+                                  )}
                                 </ul>
                               </div>
                             )}
                           </div>
 
+                          {/* Action Buttons */}
                           <div className="ml-4 flex flex-col space-y-2">
                             <Button
                               size="sm"
                               variant="outline"
+                              className={`hover:${bgColor} hover:${borderColor} hover:${textColor}`}
                               onClick={(e) => {
                                 e.stopPropagation();
                                 saveRoute(route);
                               }}
                               data-testid={`save-route-btn-${index}`}
                             >
-                              <Bookmark className="w-3 h-3" />
+                              <Bookmark className="w-4 h-4" />
                             </Button>
+                            
+                            {selectedRoute?.id === route.id && (
+                              <div className="flex items-center justify-center w-8 h-8 rounded-full bg-blue-500 text-white text-xs font-bold">
+                                ✓
+                              </div>
+                            )}
                           </div>
                         </div>
                       </div>
