@@ -16,7 +16,7 @@ const createCustomIcon = (color, type) => {
   return L.divIcon({
     className: 'custom-div-icon',
     html: `
-      <div style=\"
+      <div style="
         background-color: ${color};
         width: 24px;
         height: 24px;
@@ -29,7 +29,7 @@ const createCustomIcon = (color, type) => {
         font-size: 12px;
         color: white;
         font-weight: bold;
-      \">
+      ">
         ${type === 'source' ? 'S' : 'D'}
       </div>
     `,
