@@ -129,86 +129,190 @@ async def fetch_tempo_data(lat: float, lng: float) -> PollutantData:
             aqi=65.0
         )
 
-# Route calculation with pollution scoring
+# US Cities data for realistic intermediate waypoints
+US_CITIES = {
+    'New York, NY': {'lat': 40.7128, 'lng': -74.0060, 'state': 'NY'},
+    'Los Angeles, CA': {'lat': 34.0522, 'lng': -118.2437, 'state': 'CA'},
+    'Chicago, IL': {'lat': 41.8781, 'lng': -87.6298, 'state': 'IL'},
+    'Houston, TX': {'lat': 29.7604, 'lng': -95.3698, 'state': 'TX'},
+    'Phoenix, AZ': {'lat': 33.4484, 'lng': -112.0740, 'state': 'AZ'},
+    'Philadelphia, PA': {'lat': 39.9526, 'lng': -75.1652, 'state': 'PA'},
+    'San Antonio, TX': {'lat': 29.4241, 'lng': -98.4936, 'state': 'TX'},
+    'San Diego, CA': {'lat': 32.7157, 'lng': -117.1611, 'state': 'CA'},
+    'Dallas, TX': {'lat': 32.7767, 'lng': -96.7970, 'state': 'TX'},
+    'San Jose, CA': {'lat': 37.3382, 'lng': -121.8863, 'state': 'CA'},
+    'Denver, CO': {'lat': 39.7392, 'lng': -104.9903, 'state': 'CO'},
+    'Las Vegas, NV': {'lat': 36.1699, 'lng': -115.1398, 'state': 'NV'},
+    'Oklahoma City, OK': {'lat': 35.4676, 'lng': -97.5164, 'state': 'OK'},
+    'Albuquerque, NM': {'lat': 35.0844, 'lng': -106.6504, 'state': 'NM'},
+    'Kansas City, MO': {'lat': 39.0997, 'lng': -94.5786, 'state': 'MO'},
+    'St. Louis, MO': {'lat': 38.6270, 'lng': -90.1994, 'state': 'MO'},
+    'Nashville, TN': {'lat': 36.1627, 'lng': -86.7816, 'state': 'TN'},
+    'Atlanta, GA': {'lat': 33.7490, 'lng': -84.3880, 'state': 'GA'},
+    'Indianapolis, IN': {'lat': 39.7684, 'lng': -86.1581, 'state': 'IN'},
+    'Columbus, OH': {'lat': 39.9612, 'lng': -82.9988, 'state': 'OH'}
+}
+
+def find_intermediate_cities(source_lat, source_lng, dest_lat, dest_lng, route_type):
+    """Find realistic intermediate cities along the route"""
+    intermediate_cities = []
+    
+    # Calculate route bounds
+    min_lat, max_lat = min(source_lat, dest_lat), max(source_lat, dest_lat)
+    min_lng, max_lng = min(source_lng, dest_lng), max(source_lng, dest_lng)
+    
+    # Expand bounds slightly
+    lat_margin = (max_lat - min_lat) * 0.3
+    lng_margin = (max_lng - min_lng) * 0.3
+    
+    # Find cities within the route corridor
+    for city_name, coords in US_CITIES.items():
+        lat, lng = coords['lat'], coords['lng']
+        
+        # Check if city is in the route corridor
+        if (min_lat - lat_margin <= lat <= max_lat + lat_margin and
+            min_lng - lng_margin <= lng <= max_lng + lng_margin):
+            
+            # Calculate distance from the direct route line
+            # Simple approximation for demo purposes
+            route_distance = ((dest_lat - source_lat) * (lat - source_lat) + 
+                            (dest_lng - source_lng) * (lng - source_lng)) / \
+                           ((dest_lat - source_lat)**2 + (dest_lng - source_lng)**2)
+            
+            if 0.1 <= route_distance <= 0.9:  # Not too close to endpoints
+                intermediate_cities.append({
+                    'name': city_name,
+                    'lat': lat,
+                    'lng': lng,
+                    'state': coords['state'],
+                    'route_position': route_distance
+                })
+    
+    # Sort by position along route
+    intermediate_cities.sort(key=lambda x: x['route_position'])
+    
+    # Limit to 2-4 cities depending on route type
+    if route_type == "Fastest Route":
+        return intermediate_cities[:2]  # Fewer stops
+    elif route_type == "Cleanest Air Route":
+        return intermediate_cities[:4]  # More stops for cleaner path
+    else:
+        return intermediate_cities[:3]  # Balanced
+
+# Enhanced route calculation with pollution scoring
 async def calculate_routes_with_pollution(source: Location, destination: Location) -> List[RouteOption]:
     """
-    Calculate multiple route options with pollution scoring.
+    Calculate multiple route options with detailed pollution scoring and intermediate cities.
     """
     routes = []
     
     # Generate 3 different route options
-    route_names = ["Fastest Route", "Cleanest Air Route", "Balanced Route"]
+    route_configs = [
+        {"name": "Fastest Route", "pollution_multiplier": 1.2, "distance_multiplier": 1.0},
+        {"name": "Cleanest Air Route", "pollution_multiplier": 0.6, "distance_multiplier": 1.15},
+        {"name": "Balanced Route", "pollution_multiplier": 0.8, "distance_multiplier": 1.08}
+    ]
     
-    for i, name in enumerate(route_names):
-        # Simulate route waypoints
-        lat_diff = destination.lat - source.lat
-        lng_diff = destination.lng - source.lng
+    for config in route_configs:
+        name = config["name"]
         
+        # Find intermediate cities
+        intermediate_cities = find_intermediate_cities(
+            source.lat, source.lng, destination.lat, destination.lng, name
+        )
+        
+        # Create waypoints including intermediate cities
         waypoints = []
-        num_points = 5
+        waypoint_details = []
         
-        for j in range(num_points + 1):
-            progress = j / num_points
-            # Add some variation for different routes
-            lat_offset = lat_diff * progress + (random.uniform(-0.01, 0.01) * i)
-            lng_offset = lng_diff * progress + (random.uniform(-0.01, 0.01) * i)
-            
-            waypoint_lat = source.lat + lat_offset
-            waypoint_lng = source.lng + lng_offset
-            waypoints.append({"lat": waypoint_lat, "lng": waypoint_lng})
+        # Add source
+        waypoints.append({"lat": source.lat, "lng": source.lng})
+        waypoint_details.append({
+            "name": source.address,
+            "type": "source",
+            "pollution_data": None
+        })
+        
+        # Add intermediate cities
+        for city in intermediate_cities:
+            # Add slight variation for different routes
+            variation = random.uniform(-0.05, 0.05) if "Fastest" not in name else 0
+            waypoints.append({
+                "lat": city['lat'] + variation, 
+                "lng": city['lng'] + variation
+            })
+            waypoint_details.append({
+                "name": city['name'],
+                "type": "intermediate",
+                "state": city['state'],
+                "pollution_data": None
+            })
+        
+        # Add destination
+        waypoints.append({"lat": destination.lat, "lng": destination.lng})
+        waypoint_details.append({
+            "name": destination.address,
+            "type": "destination",
+            "pollution_data": None
+        })
         
         # Calculate pollution along route
         pollution_samples = []
-        for waypoint in waypoints:
+        for i, waypoint in enumerate(waypoints):
             pollution_data = await fetch_tempo_data(waypoint["lat"], waypoint["lng"])
             pollution_samples.append(pollution_data)
+            waypoint_details[i]["pollution_data"] = pollution_data
         
-        # Average pollution levels
+        # Calculate average pollution levels
         avg_no2 = sum(p.no2 for p in pollution_samples if p.no2) / len(pollution_samples)
         avg_o3 = sum(p.o3 for p in pollution_samples if p.o3) / len(pollution_samples)
         avg_so2 = sum(p.so2 for p in pollution_samples if p.so2) / len(pollution_samples)
         avg_co2 = sum(p.co2 for p in pollution_samples if p.co2) / len(pollution_samples)
         avg_methane = sum(p.methane for p in pollution_samples if p.methane) / len(pollution_samples)
         
-        # Calculate pollution score (0-100, lower is better)
-        pollution_score = min(100, max(0, 
-            (avg_no2 * 2.0) + (avg_o3 * 1.5) + (avg_so2 * 4.0) + ((avg_co2 - 400) * 0.1)
-        ))
+        # Enhanced pollution score calculation (0-100, lower is better)
+        base_score = (avg_no2 * 2.0) + (avg_o3 * 1.5) + (avg_so2 * 4.0) + ((avg_co2 - 400) * 0.1)
+        pollution_score = min(100, max(0, base_score * config["pollution_multiplier"]))
         
-        # Adjust route characteristics based on type
-        if "Fastest" in name:
-            distance = round(111 * ((lat_diff**2 + lng_diff**2)**0.5), 1)
-            duration = round(distance * 1.2, 0)  # Assuming 50 km/h average
-            pollution_score *= 1.1  # Slightly higher pollution
-        elif "Cleanest" in name:
-            distance = round(111 * ((lat_diff**2 + lng_diff**2)**0.5) * 1.15, 1)
-            duration = round(distance * 1.5, 0)
-            pollution_score *= 0.7  # Lower pollution
-        else:  # Balanced
-            distance = round(111 * ((lat_diff**2 + lng_diff**2)**0.5) * 1.08, 1)
-            duration = round(distance * 1.35, 0)
-            pollution_score *= 0.9
+        # Calculate distance
+        total_distance = 0
+        for i in range(len(waypoints) - 1):
+            lat1, lng1 = waypoints[i]["lat"], waypoints[i]["lng"]
+            lat2, lng2 = waypoints[i + 1]["lat"], waypoints[i + 1]["lng"]
+            segment_distance = 111 * ((lat2 - lat1)**2 + (lng2 - lng1)**2)**0.5
+            total_distance += segment_distance
         
-        # Generate recommendations based on pollution levels
+        distance = round(total_distance * config["distance_multiplier"], 1)
+        duration = round(distance * 1.3, 0)  # Assuming ~45 km/h average with stops
+        
+        # Generate enhanced recommendations
         recommendations = []
         if pollution_score > 70:
             recommendations.extend([
-                "High pollution detected: Consider wearing an N95 mask",
-                "Avoid outdoor exercise along this route",
-                "Keep windows closed if driving"
+                "🚨 High pollution detected: Wear N95 mask recommended",
+                "🚗 Keep windows closed, use recirculated air",
+                "⚠️ Avoid outdoor exercise along this route",
+                "🌅 Consider traveling during early morning hours"
             ])
         elif pollution_score > 50:
             recommendations.extend([
-                "Moderate pollution: Sensitive individuals should take precautions",
-                "Consider alternative route if you have respiratory conditions"
+                "⚠️ Moderate pollution: Sensitive individuals take precautions", 
+                "🏥 Not recommended for those with respiratory conditions",
+                "😷 Light mask recommended for extended exposure"
             ])
         else:
-            recommendations.append("Good air quality along this route")
+            recommendations.extend([
+                "✅ Good air quality along this route",
+                "🌿 Safe for outdoor activities and exercise"
+            ])
         
-        if avg_no2 > 20:
-            recommendations.append("High NO2 levels: Avoid peak traffic hours")
-        if avg_o3 > 50:
-            recommendations.append("High ozone levels: Best to travel in early morning or evening")
+        # Add specific pollutant warnings
+        if avg_no2 > 25:
+            recommendations.append("🚗 High NO₂: Avoid rush hour traffic (7-9 AM, 5-7 PM)")
+        if avg_o3 > 60:
+            recommendations.append("☀️ High ozone: Best to travel before 10 AM or after 7 PM")
+        if avg_so2 > 10:
+            recommendations.append("🏭 High SO₂ detected: Avoid industrial areas")
         
         route = RouteOption(
             route_name=name,
@@ -225,6 +329,10 @@ async def calculate_routes_with_pollution(source: Location, destination: Locatio
             },
             recommendations=recommendations
         )
+        
+        # Add waypoint details as additional data
+        route.waypoint_details = waypoint_details
+        
         routes.append(route)
     
     # Sort by pollution score (cleanest first)
