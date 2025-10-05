@@ -310,12 +310,17 @@ const RoutePlannerPage = ({ userId }) => {
             {routes.length > 0 && (
               <Card className="shadow-lg border-0" data-testid="route-options-card">
                 <CardHeader>
-                  <CardTitle className="flex items-center font-space-grotesk">
-                    <Route className="w-5 h-5 mr-2 text-purple-600" />
-                    Route Options
+                  <CardTitle className="flex items-center justify-between font-space-grotesk">
+                    <div className="flex items-center">
+                      <Route className="w-5 h-5 mr-2 text-purple-600" />
+                      Route Options
+                    </div>
+                    <div className="text-sm text-gray-500">
+                      {routes.length} routes found
+                    </div>
                   </CardTitle>
                   <CardDescription>
-                    Choose the best route based on air quality and preferences
+                    Routes sorted by air quality - cleanest first 🌿
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
