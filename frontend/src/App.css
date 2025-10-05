@@ -1,34 +1,225 @@
-.App-logo {
-    height: 40vmin;
-    pointer-events: none;
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@300;400;500;600;700&display=swap');
+
+.App {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-    .App-logo {
-        animation: App-logo-spin infinite 20s linear;
-    }
+/* Custom utility classes */
+.font-space-grotesk {
+  font-family: 'Space Grotesk', sans-serif;
 }
 
-.App-header {
-    background-color: #0f0f10;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    font-size: calc(10px + 2vmin);
-    color: white;
+/* Map container styles */
+.map-container {
+  height: 400px;
+  width: 100%;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
 }
 
-.App-link {
-    color: #61dafb;
+/* Pollution level indicators */
+.pollution-indicator {
+  @apply inline-flex items-center px-3 py-1 rounded-full text-sm font-medium;
 }
 
-@keyframes App-logo-spin {
-    from {
-        transform: rotate(0deg);
-    }
-    to {
-        transform: rotate(360deg);
-    }
+.pollution-good {
+  @apply bg-green-100 text-green-800;
+}
+
+.pollution-moderate {
+  @apply bg-yellow-100 text-yellow-800;
+}
+
+.pollution-unhealthy {
+  @apply bg-orange-100 text-orange-800;
+}
+
+.pollution-very-unhealthy {
+  @apply bg-red-100 text-red-800;
+}
+
+.pollution-hazardous {
+  @apply bg-purple-100 text-purple-800;
+}
+
+/* Route option cards */
+.route-card {
+  @apply bg-white rounded-xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-all duration-300;
+}
+
+.route-card:hover {
+  transform: translateY(-2px);
+}
+
+/* Custom scrollbar */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 3px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 3px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Glassmorphism effects */
+.glass-card {
+  background: rgba(255, 255, 255, 0.25);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+}
+
+/* Loading animations */
+.loading-pulse {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: .5;
+  }
+}
+
+/* Hero section gradient text */
+.gradient-text {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Air quality meter styles */
+.aqi-meter {
+  position: relative;
+  width: 200px;
+  height: 100px;
+  margin: 0 auto;
+}
+
+.aqi-arc {
+  stroke-width: 8;
+  fill: none;
+  stroke-linecap: round;
+}
+
+.aqi-needle {
+  transform-origin: 100px 90px;
+  transition: transform 0.5s ease-in-out;
+}
+
+/* Button hover effects */
+.btn-primary {
+  @apply bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold py-3 px-6 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300;
+}
+
+.btn-primary:hover {
+  transform: translateY(-1px);
+}
+
+.btn-secondary {
+  @apply bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 font-semibold py-3 px-6 rounded-xl shadow-sm hover:shadow-md transition-all duration-300;
+}
+
+/* Navigation styles */
+.nav-link {
+  @apply text-gray-600 hover:text-gray-900 px-4 py-2 rounded-lg transition-colors duration-200;
+}
+
+.nav-link.active {
+  @apply text-blue-600 bg-blue-50;
+}
+
+/* Alert styles */
+.alert {
+  @apply p-4 rounded-xl border-l-4;
+}
+
+.alert-info {
+  @apply bg-blue-50 border-blue-400 text-blue-800;
+}
+
+.alert-warning {
+  @apply bg-yellow-50 border-yellow-400 text-yellow-800;
+}
+
+.alert-danger {
+  @apply bg-red-50 border-red-400 text-red-800;
+}
+
+.alert-success {
+  @apply bg-green-50 border-green-400 text-green-800;
+}
+
+/* Card hover effects */
+.interactive-card {
+  @apply transition-all duration-300 hover:shadow-lg;
+}
+
+.interactive-card:hover {
+  transform: translateY(-4px);
+}
+
+/* Responsive utilities */
+@media (max-width: 640px) {
+  .map-container {
+    height: 300px;
+  }
+  
+  .route-card {
+    @apply p-4;
+  }
+}
+
+/* Focus styles for accessibility */
+.focus-ring {
+  @apply focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2;
+}
+
+/* Leaflet map custom styles */
+.leaflet-container {
+  font-family: inherit;
+}
+
+.leaflet-popup-content {
+  font-family: inherit;
+}
+
+/* Custom marker styles */
+.pollution-marker {
+  border-radius: 50%;
+  border: 3px solid white;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+}
+
+.pollution-marker.good {
+  background-color: #10b981;
+}
+
+.pollution-marker.moderate {
+  background-color: #f59e0b;
+}
+
+.pollution-marker.unhealthy {
+  background-color: #ef4444;
+}
+
+.pollution-marker.hazardous {
+  background-color: #8b5cf6;
 }
