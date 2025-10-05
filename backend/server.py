@@ -58,6 +58,7 @@ class RouteOption(BaseModel):
     waypoints: List[Dict[str, float]]  # List of {lat, lng} coordinates
     pollutant_levels: Dict[str, float]  # Average pollutant levels along route
     recommendations: List[str]
+    waypoint_details: Optional[List[Dict[str, Any]]] = None  # Details about intermediate cities
 
 class RouteResponse(BaseModel):
     request_id: str = Field(default_factory=lambda: str(uuid.uuid4()))
