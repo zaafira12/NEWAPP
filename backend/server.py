@@ -380,6 +380,45 @@ async def get_current_pollution(lat: float, lng: float):
         logging.error(f"Error fetching pollution data: {e}")
         raise HTTPException(status_code=500, detail="Error fetching pollution data")
 
+@api_router.get("/pollution/heatmap")
+async def get_pollution_heatmap(bounds: str):
+    """
+    Get pollution heatmap data for a geographical area
+    Format: bounds = "lat1,lng1,lat2,lng2"
+    """
+    try:
+        # Parse bounds
+        coords = [float(x) for x in bounds.split(',')]
+        lat1, lng1, lat2, lng2 = coords
+        
+        # Generate grid of pollution data points
+        heatmap_data = []
+        grid_size = 10  # 10x10 grid
+        
+        for i in range(grid_size):
+            for j in range(grid_size):
+                lat = lat1 + (lat2 - lat1) * i / (grid_size - 1)
+                lng = lng1 + (lng2 - lng1) * j / (grid_size - 1)
+                
+                pollution_data = await fetch_tempo_data(lat, lng)
+                heatmap_data.append({
+                    "lat": lat,
+                    "lng": lng,
+                    "intensity": pollution_data.aqi / 100,  # Normalize to 0-1
+                    "pollutants": {
+                        "no2": pollution_data.no2,
+                        "o3": pollution_data.o3,
+                        "so2": pollution_data.so2,
+                        "co2": pollution_data.co2,
+                        "methane": pollution_data.methane
+                    }
+                })
+        
+        return {"heatmap_points": heatmap_data}
+    except Exception as e:
+        logging.error(f"Error generating heatmap data: {e}")
+        raise HTTPException(status_code=500, detail="Error generating heatmap data")
+
 @api_router.post("/routes/save", response_model=SavedRoute)
 async def save_route(saved_route: SavedRoute):
     """
