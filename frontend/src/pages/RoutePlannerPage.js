@@ -409,11 +409,13 @@ const RoutePlannerPage = ({ userId }) => {
               </CardHeader>
               <CardContent className="p-0">
                 <div className="map-container h-96 lg:h-[600px]">
-                  <SimpleLeafletMap
+                  <EnhancedLeafletMap
                     source={source}
                     destination={destination}
                     selectedRoute={selectedRoute}
                     routes={routes}
+                    showHeatmap={true}
+                    enablePinDrop={true}
                   />
                 </div>
               </CardContent>
