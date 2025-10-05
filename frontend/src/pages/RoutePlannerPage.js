@@ -409,7 +409,7 @@ const RoutePlannerPage = ({ userId }) => {
               </CardHeader>
               <CardContent className="p-0">
                 <div className="map-container h-96 lg:h-[600px]">
-                  <LeafletMap
+                  <SimpleLeafletMap
                     source={source}
                     destination={destination}
                     selectedRoute={selectedRoute}
