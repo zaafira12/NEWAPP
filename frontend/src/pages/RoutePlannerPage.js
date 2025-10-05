@@ -323,6 +323,10 @@ const RoutePlannerPage = ({ userId }) => {
                     const pollution = getPollutionLevel(route.pollution_score);
                     const IconComponent = pollution.icon;
                     
+                    // Get route color based on pollution score
+                    const routeColor = route.pollution_score <= 30 ? '#10b981' : 
+                                     route.pollution_score <= 50 ? '#eab308' : '#ef4444';
+                    
                     return (
                       <div
                         key={route.id}
@@ -336,7 +340,14 @@ const RoutePlannerPage = ({ userId }) => {
                       >
                         <div className="flex items-start justify-between">
                           <div className="flex-1">
-                            <h4 className="font-semibold text-gray-900 mb-2">{route.route_name}</h4>
+                            <div className="flex items-center space-x-2 mb-2">
+                              <h4 className="font-semibold text-gray-900">{route.route_name}</h4>
+                              <div 
+                                className="w-3 h-3 rounded-full border border-white shadow-sm" 
+                                style={{ backgroundColor: routeColor }}
+                                title={`Pollution Level: ${pollution.level}`}
+                              ></div>
+                            </div>
                             
                             <div className="flex items-center space-x-4 text-sm text-gray-600 mb-2">
                               <span className="flex items-center">
@@ -349,16 +360,39 @@ const RoutePlannerPage = ({ userId }) => {
                               </span>
                             </div>
 
-                            <div className="flex items-center space-x-2 mb-2">
+                            <div className="flex items-center space-x-2 mb-3">
                               <IconComponent className="w-4 h-4" />
-                              <Badge className={`pollution-indicator ${pollution.color}`}>
-                                {pollution.level} (Score: {route.pollution_score})
+                              <Badge 
+                                className={`pollution-indicator ${pollution.color}`}
+                                style={{ 
+                                  backgroundColor: routeColor + '20', 
+                                  color: routeColor,
+                                  border: `1px solid ${routeColor}`
+                                }}
+                              >
+                                {pollution.level} ({route.pollution_score})
                               </Badge>
                             </div>
 
-                            {route.recommendations.length > 0 && (
+                            {/* Show intermediate cities if available */}
+                            {route.waypoint_details && route.waypoint_details.filter(w => w.type === 'intermediate').length > 0 && (
+                              <div className="text-xs text-gray-600 mb-2">
+                                <span className="font-medium">Via: </span>
+                                {route.waypoint_details
+                                  .filter(w => w.type === 'intermediate')
+                                  .slice(0, 2)
+                                  .map(w => w.name.split(',')[0])
+                                  .join(', ')
+                                }
+                                {route.waypoint_details.filter(w => w.type === 'intermediate').length > 2 && 
+                                  ` +${route.waypoint_details.filter(w => w.type === 'intermediate').length - 2} more`
+                                }
+                              </div>
+                            )}
+
+                            {route.recommendations && route.recommendations.length > 0 && (
                               <div className="text-xs text-gray-500">
-                                <div className="font-medium mb-1">Recommendations:</div>
+                                <div className="font-medium mb-1">Health Tips:</div>
                                 <ul className="space-y-1">
                                   {route.recommendations.slice(0, 2).map((rec, i) => (
                                     <li key={i} className="flex items-start">
