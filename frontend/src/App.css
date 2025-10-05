@@ -22,29 +22,102 @@
   box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
 }
 
-/* Pollution level indicators */
+/* Enhanced pollution level indicators */
 .pollution-indicator {
-  @apply inline-flex items-center px-3 py-1 rounded-full text-sm font-medium;
+  @apply inline-flex items-center px-3 py-1 rounded-full text-sm font-medium transition-all duration-200;
 }
 
 .pollution-good {
-  @apply bg-green-100 text-green-800;
+  @apply bg-green-100 text-green-800 border border-green-300;
 }
 
 .pollution-moderate {
-  @apply bg-yellow-100 text-yellow-800;
+  @apply bg-yellow-100 text-yellow-800 border border-yellow-300;
 }
 
 .pollution-unhealthy {
-  @apply bg-orange-100 text-orange-800;
+  @apply bg-orange-100 text-orange-800 border border-orange-300;
 }
 
 .pollution-very-unhealthy {
-  @apply bg-red-100 text-red-800;
+  @apply bg-red-100 text-red-800 border border-red-300;
 }
 
 .pollution-hazardous {
-  @apply bg-purple-100 text-purple-800;
+  @apply bg-purple-100 text-purple-800 border border-purple-300;
+}
+
+/* Enhanced route cards */
+.enhanced-route-card {
+  @apply relative overflow-hidden transition-all duration-300 hover:shadow-lg;
+}
+
+.route-pollution-low {
+  @apply bg-gradient-to-r from-green-50 to-green-100 border-green-300;
+}
+
+.route-pollution-moderate {
+  @apply bg-gradient-to-r from-yellow-50 to-yellow-100 border-yellow-300;
+}
+
+.route-pollution-high {
+  @apply bg-gradient-to-r from-red-50 to-red-100 border-red-300;
+}
+
+/* Color-coded route indicators */
+.route-status-low::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, #10b981, #34d399);
+}
+
+.route-status-moderate::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, #f59e0b, #fbbf24);
+}
+
+.route-status-high::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, #ef4444, #f87171);
+}
+
+/* Air quality grid styling */
+.air-quality-grid {
+  @apply grid grid-cols-3 gap-3 p-3 bg-gray-50 rounded-lg;
+}
+
+.air-quality-item {
+  @apply text-center p-2 bg-white rounded-md shadow-sm;
+}
+
+/* Enhanced pollution score badges */
+.pollution-score-low {
+  background: linear-gradient(135deg, #10b981, #059669);
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+}
+
+.pollution-score-moderate {
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+  box-shadow: 0 2px 8px rgba(245, 158, 11, 0.3);
+}
+
+.pollution-score-high {
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+  box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);
 }
 
 /* Route option cards */
