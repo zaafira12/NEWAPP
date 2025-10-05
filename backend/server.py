@@ -328,11 +328,9 @@ async def calculate_routes_with_pollution(source: Location, destination: Locatio
                 "co2": round(avg_co2, 2),
                 "methane": round(avg_methane, 3)
             },
-            recommendations=recommendations
+            recommendations=recommendations,
+            waypoint_details=waypoint_details
         )
-        
-        # Add waypoint details as additional data
-        route.waypoint_details = waypoint_details
         
         routes.append(route)
     
