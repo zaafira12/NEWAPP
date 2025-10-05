@@ -22,7 +22,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { API } from '../App';
-import LeafletMap from '../components/LeafletMap';
+import SimpleLeafletMap from '../components/SimpleLeafletMap';
 
 const RoutePlannerPage = ({ userId }) => {
   const [source, setSource] = useState({ address: '', lat: null, lng: null });
